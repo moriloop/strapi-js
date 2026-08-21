@@ -42,14 +42,17 @@ const config = {
   prefix: '/api',
   version: 'v5',
   logType: 'auto',
-  retry: 0, // Number of auto retries for requests that have encountered an error
+  defaultFetchOptions: {
+    retry: 0, // Number of auto retries for requests that have encountered an error
+    timeout: 30_000, // Default per-request timeout in ms
+  },
 }
-const sdk = newStrapiSdk (config)
+const sdk = newStrapiSdk(config)
 
 // Step 3) Use the skd for example login and change-password:
-const { user, jwt } = await sdk.auth.login ({
+const { user, jwt } = await sdk.auth.login({
   identifier: 'mgh@gmail.com',
-  password: 'pass123'
+  password: 'pass123',
 })
 
 const changePasswordParams: StrapiChangePasswordParams = {
@@ -60,6 +63,25 @@ const changePasswordParams: StrapiChangePasswordParams = {
 
 const { user: newUser, jwt: newJwt } = await sdk.auth.changePassword(changePasswordParams, { token: jwt })
 ```
+
+### Default request options
+
+The SDK applies default fetch options from `defaultFetchOptions` on every request.
+
+```ts
+const sdk = newStrapiSdk({
+  url: 'http://localhost:1337',
+  defaultFetchOptions: {
+    retry: 0,
+    timeout: 30_000,
+    headers: {
+      'x-app-name': 'my-app',
+    },
+  },
+})
+```
+
+These defaults are merged with each per-request call, and individual request values still win.
 
 # Docs
 ## Auth Sdk

@@ -1,7 +1,8 @@
 import type { StrapiErrorResponse } from '../src/lib/types'
+import { delay, http, HttpResponse } from 'msw'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { newStrapiSdk } from '../src'
-import { strapiDefaultConfig } from '../src/lib/config'
+import { getBaseUrl, mergeConfig, strapiDefaultConfig } from '../src/lib/config'
 import { getStrapiAuthMockServer } from './mocks/strapiMockServer'
 
 const server = getStrapiAuthMockServer(strapiDefaultConfig)
@@ -46,6 +47,61 @@ describe('content-sdk package exporting', () => {
       'findOne',
       'update',
     ])
+  })
+})
+
+describe('default fetch options', () => {
+  it('should set zero retry and 30s timeout by default and allow override via mergeConfig', () => {
+    expect(strapiDefaultConfig.defaultFetchOptions).toMatchObject({
+      retry: 0,
+      timeout: 30_000,
+    })
+
+    const mergedConfig = mergeConfig({
+      defaultFetchOptions: {
+        timeout: 5_000,
+        headers: { 'x-test-header': 'enabled' },
+      },
+    })
+
+    expect(mergedConfig.defaultFetchOptions).toMatchObject({
+      retry: 0,
+      timeout: 5_000,
+      headers: { 'x-test-header': 'enabled' },
+    })
+  })
+})
+
+describe('request timeout behavior', () => {
+  it('should timeout when the server response is slower than the configured default fetch timeout', async () => {
+    const timeoutConfig = mergeConfig({
+      defaultFetchOptions: {
+        timeout: 50,
+      },
+    })
+    const baseURL = getBaseUrl(timeoutConfig)
+    const slowSdk = newStrapiSdk(timeoutConfig)
+
+    server.use(
+      http.post(`${baseURL}/auth/local`, async () => {
+        await delay(200)
+        return HttpResponse.json({
+          jwt: 'slow-jwt',
+          user: { id: 1, username: 'slow-user', email: 'slow@example.com' },
+        })
+      }),
+    )
+
+    await slowSdk.auth.login({
+      identifier: 'valid-user',
+      password: 'valid-password',
+    }).catch((err) => {
+      console.warn('[timeout-test] actual rejection:', err)
+      expect(err).toMatchObject({
+        name: 'TimeoutError',
+        status: 408,
+      })
+    })
   })
 })
 

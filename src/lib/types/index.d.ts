@@ -10,7 +10,7 @@ export interface StrapiConfig {
   prefix?: string
   version?: 'v4' | 'v5'
   logType?: 'auto' | 'fatal' | 'info' | 'debug'
-  retry?: number
+  defaultFetchOptions?: StrapiFetchOptions
 }
 
 export type StrapiFetchAdapter = <T> (url: string, fetchOptions: FetchOptions<'json'> & { token?: string }) => Promise<T>

@@ -7,7 +7,10 @@ export const strapiDefaultConfig: Required<StrapiConfig> = {
   prefix: '/api',
   version: 'v5',
   logType: 'auto',
-  retry: 0,
+  defaultFetchOptions: {
+    retry: 0,
+    timeout: 30_000,
+  },
 }
 
 /**

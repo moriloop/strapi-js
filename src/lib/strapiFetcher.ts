@@ -7,9 +7,11 @@ import { isTest } from 'std-env'
 import { getBaseUrl } from './config'
 
 function defaultErrors(err: FetchError) {
+  const isTimeout = err.name === 'TimeoutError' || /timeout/i.test(err.message || '')
+
   return {
-    status: 500,
-    name: 'UnknownError',
+    status: isTimeout ? 408 : 500,
+    name: isTimeout ? 'TimeoutError' : 'UnknownError',
     message: err.message,
     details: err,
   }
@@ -17,13 +19,38 @@ function defaultErrors(err: FetchError) {
 
 export function UseStrapiOfetchAdapter(config: Required<StrapiConfig>): StrapiFetchAdapter {
   const baseURL = getBaseUrl(config)
+  const defaultFetchOptions = {
+    retry: 0,
+    timeout: 30_000,
+    ...(config.defaultFetchOptions ?? {}),
+  }
 
   return async <T> (url: string, fetchOptions: FetchOptions<'json'> & { token?: string } = {}): Promise<T> => {
-    const headers: Headers = new Headers(fetchOptions.headers)
+    const mergedFetchOptions: FetchOptions<'json'> & { token?: string } = {
+      ...defaultFetchOptions,
+      ...fetchOptions,
+      headers: {
+        ...(defaultFetchOptions.headers ?? {}),
+        ...(fetchOptions.headers ?? {}),
+      },
+      params: {
+        ...(defaultFetchOptions.params ?? {}),
+        ...(fetchOptions.params ?? {}),
+      },
+    }
+
+    const {
+      token,
+      params,
+      headers: requestHeaders = {},
+      ...restFetchOptions
+    } = mergedFetchOptions
+
+    const headers: Headers = new Headers(requestHeaders)
 
     // if explicity a token provided, we use it for header-authorization
-    if (fetchOptions.token) {
-      headers.set('Authorization', `Bearer ${fetchOptions.token}`)
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`)
       consola.debug('[strapi-js] Explicit jwt token provided and set into headers: ', headers.get('Authorization'))
     }
     else if (!headers.get('Authorization')) {
@@ -31,12 +58,10 @@ export function UseStrapiOfetchAdapter(config: Required<StrapiConfig>): StrapiFe
     }
 
     // request params are encoded as query-params in the request url using qs library
-    if (fetchOptions.params) {
-      const params = stringify(fetchOptions.params, { encodeValuesOnly: true })
-      if (params)
-        url = `${url}?${params}`
-
-      delete fetchOptions.params
+    if (params) {
+      const serializedParams = stringify(params, { encodeValuesOnly: true })
+      if (serializedParams)
+        url = `${url}?${serializedParams}`
     }
 
     try {
@@ -44,15 +69,22 @@ export function UseStrapiOfetchAdapter(config: Required<StrapiConfig>): StrapiFe
       // https://github.com/unjs/ofetch/issues/295
       const fetchInstance = isTest ? createFetch() : ofetch
       const requestOptions = {
-        retry: config.retry,
         baseURL,
-        ...fetchOptions,
+        ...restFetchOptions,
+        retry: restFetchOptions.retry ?? defaultFetchOptions.retry,
         headers,
       }
       return await <T> fetchInstance(url, requestOptions)
     }
     catch (err: any) {
       const strapiError: StrapiErrorResponse = err.data?.error || defaultErrors(err)
+      if (strapiError.status === 408 || strapiError.name === 'TimeoutError') {
+        const timeoutError = new Error(strapiError.message) as Error & StrapiErrorResponse
+        timeoutError.name = 'TimeoutError'
+        timeoutError.status = 408
+        timeoutError.details = err
+        throw timeoutError
+      }
       throw strapiError
     }
   }
