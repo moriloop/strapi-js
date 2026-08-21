@@ -4,6 +4,22 @@
 All considerable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 
+## v3.0.0
+
+[compare changes](https://github.com/mohammadGh/strapi-js/compare/v2.1.1...v3.0.0)
+
+### 🚀 Enhancements
+
+- Feat: add default fetch options and timeout error handling ([e186fa4](https://github.com/mohammadGh/strapi-js/commit/e186fa4))
+
+### 📦 Build
+
+- Release-it without publishing to npm ([b4748d3](https://github.com/mohammadGh/strapi-js/commit/b4748d3))
+
+### ❤️ Contributors
+
+- Mgh <m.ghoreshi@gmail.com>
+
 ## v2.1.1
 
 [compare changes](https://github.com/mohammadGh/strapi-js/compare/v2.1.0...v2.1.1)
