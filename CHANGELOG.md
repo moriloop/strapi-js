@@ -4,6 +4,23 @@
 All considerable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 
+## v3.0.1
+
+[compare changes](https://github.com/mohammadGh/strapi-js/compare/v3.0.0...v3.0.1)
+
+### 🩹 Fixes
+
+- **pnpm:** Remove ignore-workspace-root-check and shell-emulator ([7d7e744](https://github.com/mohammadGh/strapi-js/commit/7d7e744))
+- **readme:** Additional h1 ([824c72c](https://github.com/mohammadGh/strapi-js/commit/824c72c))
+
+### 🏡 Chore
+
+- Update deps and pnpm to v12.11.1 ([fd3a371](https://github.com/mohammadGh/strapi-js/commit/fd3a371))
+
+### ❤️ Contributors
+
+- Mori ([@moriloop](https://github.com/moriloop))
+
 ## v3.0.0
 
 [compare changes](https://github.com/mohammadGh/strapi-js/compare/v2.1.1...v3.0.0)
