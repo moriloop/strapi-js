@@ -4,6 +4,10 @@
 All considerable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 
+## v3.0.2
+
+[compare changes](https://github.com/mohammadGh/strapi-js/compare/v3.0.1...v3.0.2)
+
 ## v3.0.1
 
 [compare changes](https://github.com/mohammadGh/strapi-js/compare/v3.0.0...v3.0.1)

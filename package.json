@@ -1,7 +1,7 @@
 {
   "name": "strapi-js",
   "type": "module",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "packageManager": "pnpm@12.11.1",
   "description": "A nodejs/browser/edge javascript SDK for Strapi headless CMS; type-safe with typescript.",
   "author": "mgh <m.ghoreshi@gmail.com>",
