@@ -1,1 +1,10 @@
-pnpm lint-staged
+#!/usr/bin/env sh
+set -eu
+
+# lint only staged files
+if git diff --cached --name-only --diff-filter=ACMR \
+  | grep -Eq '\.(js|jsx|ts|tsx|mjs|cjs|mts|cts|vue)$'; then
+  pnpm lint-staged
+else
+  echo "No staged code files; skipping lint-staged."
+fi
